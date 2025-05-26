@@ -33,7 +33,7 @@ def parse_verses(input_path, output_path, category="Purana", book="Garudapurana"
             quote = re.sub(r'//.*?//', '', combined)
             quote = quote.replace('/', '').strip()
 
-            position = f"Kanda {kanda}, Sarga {sarga}, Verse {verse}"
+            position = f"{kanda}.{sarga}.{verse}"
             record = {
                 "quote": quote,
                 "category": category,

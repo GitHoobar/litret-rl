@@ -54,7 +54,7 @@ def parse_verses(input_path, output_path, category="Purana", book="Agnipurana"):
                             "quote": clean_text,
                             "category": category,
                             "book": book,
-                            "position": f"Chapter {chapter_num}, Verse {verse_id}"
+                            "position": f"{chapter_num}.{verse_id}"
                         }
                         
                         out.write(json.dumps(record, ensure_ascii=False) + '\n')

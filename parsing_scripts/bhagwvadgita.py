@@ -49,7 +49,7 @@ def parse_verses(input_path, output_path, category="Epic, Mahabharata", book="Bh
             quote = quote.replace('|', '').strip()
 
             # Build record
-            position = f"Chapter {current_chapter}, Verse {verse_id}"
+            position = f"{current_chapter}.{verse_id}"
             record = {
                 "quote": quote,
                 "category": category,

@@ -30,7 +30,7 @@ def parse_verses(input_path, output_path, category="Epic, Ramayana", book="Ramay
             # remove reference
             quote = ref_pattern.sub('', combined).strip()
             # build position
-            position = f"Kanda {kanda}, Sarga {sarga}, Verse {verse}"
+            position = f"{kanda}.{sarga}.{verse}"
             record = {
                 "quote": quote,
                 "category": category,
