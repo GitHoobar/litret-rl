@@ -1,6 +1,6 @@
-def read_file(filename):
-    # Path traversal vulnerability
-    with open(f"/var/www/{filename}", 'r') as f:
-        return f.read()
+import ssl
+
+# This will trigger SonarQube rule S4423
+context = ssl.SSLContext(ssl.PROTOCOL_SSLv2)
 
 print("hi")

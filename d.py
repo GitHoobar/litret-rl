@@ -1,6 +1,6 @@
-# Hardcoded credentials - security issue
-API_KEY = "sk-1234567890abcdef"
-DATABASE_PASSWORD = "admin123"
-SECRET_TOKEN = "super_secret_token_123"
+# This will trigger SonarQube rule S2068
+password = "P@ssw0rd123"
+api_key = "sk-1234567890abcdef"
+secret = "hardcoded_secret_key"
 
 print("hi")
