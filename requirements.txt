@@ -1,0 +1,12 @@
+# Core dependencies
+datasets>=2.14.0
+huggingface-hub>=0.16.0
+
+# Redis caching for performance optimization
+redis>=5.0.0
+hiredis>=2.2.0  # C parser for Redis protocol (performance boost)
+
+# Development dependencies
+pytest>=7.4.0
+pytest-redis>=3.0.0
+
