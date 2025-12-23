@@ -23,3 +23,11 @@ API_KEY = "sk-1234567890abcdef1234567890abcdef"
 
 def call_api():
     return {"key": API_KEY}
+
+
+def get_all_users():
+    """Get all users from database."""
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    return cursor.fetchall()
