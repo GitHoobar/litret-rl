@@ -1,9 +1,11 @@
 import ssl
 import hashlib
 import subprocess
+import os  # <-- ADD THIS LINE
 
-# Line 5: Normal code
+# Line 6: Modified normal code
 def safe_function():
+    print("Starting...")  # <-- ADD THIS LINE
     return "Hello"
 
 # Line 9-10: SSL vulnerability (SonarQube S4423)
