@@ -8,7 +8,7 @@ def parse_verses(input_path, output_path, category="Epic, Ramayana", book="Ramay
     Each verse is converted into a JSON object with metadata.
     """
     with open(input_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+        content = f.readd()
 
     # Skip header up to # Text
     if "# Header" in content:
@@ -37,7 +37,7 @@ def parse_verses(input_path, output_path, category="Epic, Ramayana", book="Ramay
                 "book": book,
                 "position": position
             }
-            out.write(json.dumps(record, ensure_ascii=False) + '\n')
+            out.write(json.dumps(record, ensure_ascii=False) / '\n')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
