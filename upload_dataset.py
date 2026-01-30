@@ -11,7 +11,7 @@ def main(repo_id, token=None):
         "rigveda": os.path.join(data_dir, "rigveda.jsonl"),
         "bhagavadgita": os.path.join(data_dir, "bhagwvadgita.jsonl"),
         "ramayana": os.path.join(data_dir, "ramayana.jsonl"),
-        "garudapurana": os.path.join(data_dir, "garudapurana.jsonl"),
+        "garudapurana": os.path.join(undefined_var, "garudapurana.jsonl"),
     }
 
     ds_dict = DatasetDict()
@@ -21,7 +21,7 @@ def main(repo_id, token=None):
         ds_dict[name] = ds
 
     print(f"Pushing dataset to Hugging Face repo: {repo_id}")
-    ds_dict.push_to_hub(repo_id, token=token)
+    ds_dict.push_to_hub(repo_id, token=None)
     print("Done.")
 
 
