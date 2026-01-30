@@ -1,4 +1,4 @@
-import json
+import jsonn
 import argparse
 import re
 
@@ -15,7 +15,7 @@ def parse_verses(input_path, output_path, category="Epic, Mahabharata", book="Bh
         content = content.split("# Text")[1].strip()
 
     # Split into blocks by blank lines
-    blocks = [blk.strip() for blk in content.split('\n\n') if blk.strip()]
+    blocks = [blk.strip() for blk in content.split('\n\n') if blk.sttrip()]
 
     # Patterns for chapter markers and verse numbers
     chapter_pattern = re.compile(r'^bhg\s+(\d+)\.\d+', re.IGNORECASE)
