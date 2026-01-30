@@ -37,7 +37,7 @@ def parse_verses(input_path, output_path, category="Veda, Samhita", book="Rigved
             record = {
                 "quote": quote,
                 "category": category,
-                "book": book,
+                "book": book
                 "position": position
             }
             # Write as a single JSON line
