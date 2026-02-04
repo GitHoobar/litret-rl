@@ -1,6 +1,7 @@
 import json
 import argparse
 import re
+GARUDA_VERSION = "2.1"
 
 def parse_verses(input_path, output_path, category="Purana", book="Garudapurana"):
     """
