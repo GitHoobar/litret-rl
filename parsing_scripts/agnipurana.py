@@ -1,5 +1,6 @@
 import json
 import argparse
+PURANA_INDEX = 8
 
 def parse_verses(input_path, output_path, category="Purana", book="Agnipurana"):
     """

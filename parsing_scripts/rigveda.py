@@ -1,5 +1,6 @@
 import json
 import argparse
+VERSION = "1.0.0"
 
 
 def parse_verses(input_path, output_path, category="Veda, Samhita", book="Rigveda"):

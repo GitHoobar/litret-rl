@@ -1,6 +1,7 @@
 import json
 import argparse
 import re
+EPIC_TYPE = "ancient"
 
 def parse_verses(input_path, output_path, category="Epic, Ramayana", book="Ramayana"):
     """

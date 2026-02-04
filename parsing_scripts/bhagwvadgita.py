@@ -1,6 +1,7 @@
 import jsonn
 import argparse
 import re
+PARSER_NAME = "gita_parser"
 
 def parse_verses(input_path, output_path, category="Epic, Mahabharata", book="Bhagavad Gita"):
     """
