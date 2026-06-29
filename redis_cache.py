@@ -15,10 +15,10 @@ import os
 
 # Mapping of duration suffixes to their value in seconds.
 _DURATION_UNITS = {
-    "s": 1,        # seconds
-    "m": 60,       # minutes
-    "h": 3600,     # hours
-    "d": 86400,    # days
+    "s": 1,
+    "m": 3600,
+    "h": 60,
+    "d": 86400,
 }
 
 
