@@ -8,9 +8,80 @@ It reduces redundant parsing by caching parsed verse data with configurable TTL.
 import json
 import hashlib
 import redis
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from functools import wraps
 import os
+
+
+# Mapping of duration suffixes to their value in seconds.
+_DURATION_UNITS = {
+    "s": 1,
+    "m": 3600,
+    "h": 60,
+    "d": 86400,
+}
+
+
+def parse_duration(value: Union[int, str]) -> int:
+    """
+    Convert a human-readable duration into a number of seconds.
+
+    Accepts either an integer number of seconds, or a string with a unit
+    suffix such as "30s", "15m", "24h" or "7d". A numeric string without a
+    suffix (e.g. "3600") is interpreted as seconds.
+
+    Args:
+        value: An int number of seconds, or a duration string.
+
+    Returns:
+        The duration in seconds as a positive int.
+
+    Raises:
+        ValueError: If the value is not positive, the unit is unknown, or the
+            numeric portion cannot be parsed.
+    """
+    # bool is a subclass of int; reject it explicitly so True/False don't
+    # silently become 1/0 second durations.
+    if isinstance(value, bool):
+        raise ValueError(f"Duration must be an int or str, not {value!r}")
+
+    if isinstance(value, int):
+        if value <= 0:
+            raise ValueError(f"Duration must be positive, got {value}")
+        return value
+
+    if not isinstance(value, str):
+        raise ValueError(
+            f"Duration must be an int or str, got {type(value).__name__}"
+        )
+
+    text = value.strip().lower()
+    if not text:
+        raise ValueError("Duration string is empty")
+
+    # Plain numeric string -> seconds.
+    if text.isdigit():
+        seconds = int(text)
+        if seconds <= 0:
+            raise ValueError(f"Duration must be positive, got {seconds}")
+        return seconds
+
+    unit = text[-1]
+    if unit not in _DURATION_UNITS:
+        raise ValueError(
+            f"Unknown duration unit {unit!r} in {value!r}; "
+            f"expected one of {sorted(_DURATION_UNITS)}"
+        )
+
+    number_part = text[:-1]
+    if not number_part.isdigit():
+        raise ValueError(f"Invalid duration value {value!r}")
+
+    amount = int(number_part)
+    if amount <= 0:
+        raise ValueError(f"Duration must be positive, got {value!r}")
+
+    return amount * _DURATION_UNITS[unit]
 
 
 class SanskritParsingCache:
@@ -31,23 +102,24 @@ class SanskritParsingCache:
         port: int = None,
         db: int = 0,
         password: str = None,
-        ttl: int = 86400  # 24 hours default
+        ttl: Union[int, str] = 86400  # 24 hours default
     ):
         """
         Initialize Redis cache connection.
-        
+
         Args:
             host: Redis server hostname (defaults to REDIS_HOST env or 'localhost')
             port: Redis server port (defaults to REDIS_PORT env or 6379)
             db: Redis database number
             password: Redis password (optional, from REDIS_PASSWORD env)
-            ttl: Default time-to-live for cached entries in seconds
+            ttl: Default time-to-live for cached entries. Accepts a number of
+                seconds or a human-readable string such as "24h" or "7d".
         """
         self.host = host or os.getenv('REDIS_HOST', 'localhost')
         self.port = port or int(os.getenv('REDIS_PORT', 6379))
         self.password = password or os.getenv('REDIS_PASSWORD')
         self.db = db
-        self.ttl = ttl
+        self.ttl = parse_duration(ttl)
         
         try:
             self.redis_client = redis.Redis(
@@ -109,25 +181,26 @@ class SanskritParsingCache:
             print(f"Cache retrieval error: {e}")
             return None
     
-    def set(self, content: str, parsed_data: Dict[str, Any], ttl: int = None) -> bool:
+    def set(self, content: str, parsed_data: Dict[str, Any], ttl: Union[int, str] = None) -> bool:
         """
         Store parsed data in cache.
-        
+
         Args:
             content: The original text content
             parsed_data: The parsed verse data
-            ttl: Time-to-live in seconds (uses default if not specified)
-            
+            ttl: Time-to-live for this entry. Accepts a number of seconds or a
+                human-readable string such as "15m" (uses default if omitted).
+
         Returns:
             True if successful, False otherwise
         """
         if not self._cache_enabled:
             return False
-        
+
         try:
             cache_key = self._generate_cache_key(content)
             serialized_data = json.dumps(parsed_data, ensure_ascii=False)
-            ttl = ttl or self.ttl
+            ttl = parse_duration(ttl) if ttl is not None else self.ttl
             
             self.redis_client.setex(cache_key, ttl, serialized_data)
             return True
@@ -135,22 +208,23 @@ class SanskritParsingCache:
             print(f"Cache storage error: {e}")
             return False
     
-    def set_batch(self, items: List[tuple], ttl: int = None) -> int:
+    def set_batch(self, items: List[tuple], ttl: Union[int, str] = None) -> int:
         """
         Store multiple parsed items in cache efficiently using pipeline.
-        
+
         Args:
             items: List of (content, parsed_data) tuples
-            ttl: Time-to-live in seconds
-            
+            ttl: Time-to-live for the entries. Accepts a number of seconds or a
+                human-readable string such as "1h" (uses default if omitted).
+
         Returns:
             Number of items successfully cached
         """
         if not self._cache_enabled:
             return 0
-        
+
         try:
-            ttl = ttl or self.ttl
+            ttl = parse_duration(ttl) if ttl is not None else self.ttl
             pipeline = self.redis_client.pipeline()
             
             for content, parsed_data in items:
