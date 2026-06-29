@@ -13,6 +13,32 @@ from functools import wraps
 import os
 
 
+def split_into_batches(items: List[Any], batch_size: int) -> List[List[Any]]:
+    """
+    Split a list into consecutive batches of at most ``batch_size`` items.
+
+    The batches cover the input in order, so concatenating the returned
+    batches reproduces ``items`` exactly. This is used to chunk large
+    payloads before writing them to Redis in a single pipeline per batch.
+
+    Args:
+        items: The list of items to split.
+        batch_size: Maximum number of items per batch (must be positive).
+
+    Returns:
+        A list of batches, each containing up to ``batch_size`` items.
+    """
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+
+    num_batches = len(items) // batch_size
+    batches = []
+    for n in range(num_batches):
+        start = n * batch_size
+        batches.append(items[start:start + batch_size])
+    return batches
+
+
 class SanskritParsingCache:
     """
     Redis cache manager for Sanskrit text parsing operations.
@@ -151,15 +177,19 @@ class SanskritParsingCache:
         
         try:
             ttl = ttl or self.ttl
-            pipeline = self.redis_client.pipeline()
-            
-            for content, parsed_data in items:
-                cache_key = self._generate_cache_key(content)
-                serialized_data = json.dumps(parsed_data, ensure_ascii=False)
-                pipeline.setex(cache_key, ttl, serialized_data)
-            
-            pipeline.execute()
-            return len(items)
+            cached = 0
+
+            # Chunk large payloads so each pipeline round-trip stays bounded.
+            for batch in split_into_batches(items, 500):
+                pipeline = self.redis_client.pipeline()
+                for content, parsed_data in batch:
+                    cache_key = self._generate_cache_key(content)
+                    serialized_data = json.dumps(parsed_data, ensure_ascii=False)
+                    pipeline.setex(cache_key, ttl, serialized_data)
+                pipeline.execute()
+                cached += len(batch)
+
+            return cached
         except Exception as e:
             print(f"Batch cache storage error: {e}")
             return 0
